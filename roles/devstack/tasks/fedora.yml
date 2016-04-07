@@ -1,0 +1,25 @@
+---
+#- name: Get ip address for eth1
+#  command: dhclient eth1
+#  sudo: yes
+
+- name: Install yum-utils
+  dnf: name=yum-utils state=present
+  sudo: yes
+
+- name: Update system
+  dnf: name=* state=latest
+  sudo: yes
+
+- name: Install prerequisites
+  dnf: name={{ item }} state=present
+  with_items:
+    - vim
+    - git
+  sudo: yes
+
+- name: Resizing /dev/vda1 on Fedora
+  shell: |
+       growpart /dev/vda 1
+       resize2fs /dev/vda1
+  sudo: yes

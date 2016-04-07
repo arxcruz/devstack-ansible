@@ -1,0 +1,39 @@
+---
+- include: fedora.yml
+  when: ansible_distribution == 'Fedora'
+
+- name: install pip prerequisites
+  pip: name="{{ item }}"
+  with_items:
+      - tox
+      - git-review
+  sudo: yes
+
+- name: Clone devstack repo
+  git: repo=https://git.openstack.org/openstack-dev/devstack dest=/home/vagrant/devstack
+
+- name: Chown devstack dir to vagrant
+  command: chown -R vagrant:vagrant /home/vagrant/devstack
+  sudo: yes
+
+- name: Create log directory
+  file: path=~/logs state=directory
+
+- name: Create local.conf for devstack
+  template: src=local.conf.j2 dest=~/devstack/local.conf
+
+- name: Run devstack
+  command: ./stack.sh
+  args:
+    chdir: ~/devstack
+
+- name: Enable necessary services for reboot
+  service: name="{{ item }}" enabled=yes
+  with_items:
+      - openvswitch
+      - mariadb
+      - rabbitmq-server
+  sudo: yes
+
+- name: source openrc in profile
+  lineinfile: dest=/home/vagrant/.profile regexp=".*openrc" line='. /home/vagrant/devstack/openrc' create=yes

@@ -1,0 +1,53 @@
+[[local|localrc]]
+ADMIN_PASSWORD={{ admin_password }}
+MYSQL_PASSWORD=$ADMIN_PASSWORD
+RABBIT_PASSWORD=$ADMIN_PASSWORD
+SERVICE_PASSWORD=$ADMIN_PASSWORD
+SERVICE_TOKEN=$ADMIN_PASSWORD
+TEMPEST_ALLOW_TENANT_ISOLATION=True
+API_RATE_LIMIT=False
+LOG_COLOR=True
+LOGFILE=~/logs/stack.sh.log
+DATA_DIR=/opt/data
+
+# Enable Neutron
+disable_service n-net
+enable_service q-svc
+enable_service q-agt
+enable_service q-dhcp
+enable_service q-l3
+enable_service q-meta
+
+# Neutron options
+Q_USE_SECGROUP=True
+FLOATING_RANGE="10.200.16.0/24"
+FIXED_RANGE="10.0.0.0/24"
+Q_FLOATING_ALLOCATION_POOL=start=10.200.16.34,end=10.200.16.61
+PUBLIC_NETWORK_GATEWAY="10.200.16.1"
+HOST_IP=10.200.16.10
+Q_L3_ENABLED=True
+PUBLIC_INTERFACE=eth2
+
+# Open vSwitch provider networking configuration
+Q_USE_PROVIDERNET_FOR_PUBLIC=True
+OVS_PHYSICAL_BRIDGE=br-ex
+PUBLIC_BRIDGE=br-ex
+OVS_BRIDGE_MAPPINGS=public:br-ex
+
+# Enable Tempest
+enable_service tempest
+
+# Enable Swift
+enable_service s-proxy s-object s-container s-account
+SWIFT_REPLICAS=1
+SWIFT_HASH=$ADMIN_PASSWORD
+
+# Enable Heat
+enable_service heat h-api h-api-cfn h-api-cw h-eng
+
+# Enable Ceilometer
+enable_plugin ceilometer https://git.openstack.org/openstack/ceilometer.git
+
+VIRT_DRIVER=libvirt
+LIBVIRT_TYPE=kvm
+export YUM=dnf
